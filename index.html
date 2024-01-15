@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Vite + TS</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+	<div id="verdict-modal" class="modal" onclick="onStopPropagation(event)">
+		<div class="modal_backdrop">
+			<div class="modal_content">
+				<div class="verdict">
+					<span id="game-verdict"></span>
+					<button onclick="restartGame()">Restart</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id="promotion-modal" class="modal" onclick="onStopPropagation(event)">
+		<div class="modal_backdrop">
+			<div class="modal_content">
+				<form class="promotion_form" onsubmit="onPromote(event)">
+					<div class="promotion_options">
+						<span class="promotion_options_title">Select the piece to promote to: </span>
+						<div class="promotion_option" onclick="onSelectPromotionPiece('queen')">
+							<input type="radio" onclick="onStopPropagation(event)" data-id="queen"
+								name="promotion-piece" value="queen" required />
+							<span>Queen</span>
+						</div>
+						<div class="promotion_option" onclick="onSelectPromotionPiece('knight')">
+							<input type="radio" onclick="onStopPropagation(event)" data-id="knight"
+								name="promotion-piece" value="knight" required />
+							<span>Knight</span>
+						</div>
+						<div class="promotion_option" onclick="onSelectPromotionPiece('rook')">
+							<input type="radio" onclick="onStopPropagation(event)" data-id="rook" name="promotion-piece"
+								value="rook" required />
+							<span>Rook</span>
+						</div>
+						<div class="promotion_option" onclick="onSelectPromotionPiece('bishop')">
+							<input type="radio" onclick="onStopPropagation(event)" data-id="bishop"
+								name="promotion-piece" value="bishop" required />
+							<span>Bishop</span>
+						</div>
+					</div>
+					<button type="submit">Promote</button>
+				</form>
+			</div>
+		</div>
+	</div>
+	<script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>

@@ -1,0 +1,102 @@
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body {
+  margin: 10;
+  font-family: "Open Sans", sans-serif;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+}
+
+#promotion-modal {
+  display: none;
+}
+
+.modal_backdrop {
+  position: absolute;
+  inset: 0;
+  background-color: #535353c2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal_content {
+  display: inline-block;
+  background-color: #fff;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.promotion_form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.promotion_options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.promotion_options_title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.promotion_option {
+  display: flex;
+  gap: 8px;
+  cursor: pointer;
+  width: fit-content;
+}
+
+.promotion_option input {
+  cursor: pointer;
+}
+
+button {
+  cursor: pointer;
+  background-color: #262626;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px;
+  font-weight: 600;
+  box-shadow: 2px 2px 2px 0px #000000bf;
+  font-size: 16px;
+}
+
+#verdict-modal {
+  display: none;
+}
+
+.verdict {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+#game-verdict {
+  font-size: 18px;
+  font-weight: 600;
+}
