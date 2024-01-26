@@ -11,6 +11,30 @@
 </head>
 
 <body>
+	<div id="intro-modal" class="modal" onclick="onStopPropagation(event)">
+		<div class="modal_backdrop">
+			<div class="modal_content">
+				<form class="intro" onsubmit="onPlayAsSubmit(event)">
+					<span class="intro_title">Play as: </span>
+					<div class="play-as-options">
+						<div class="play-as-option" onclick="selectPlayAs('white')">
+							<input type="radio" id="play_as_white" name="play_as" value="white" required />
+							<span>White</span>
+						</div>
+						<div class="play-as-option" onclick="selectPlayAs('black')">
+							<input type="radio" id="play_as_black" name="play_as" value="black" required />
+							<span>Black</span>
+						</div>
+						<div class="play-as-option" onclick="selectPlayAs('random')">
+							<input type="radio" id="play_as_random" name="play_as" value="random" required />
+							<span>Random</span>
+						</div>
+					</div>
+					<button type="submit">Play</button>
+				</form>
+			</div>
+		</div>
+	</div>
 	<div id="verdict-modal" class="modal" onclick="onStopPropagation(event)">
 		<div class="modal_backdrop">
 			<div class="modal_content">
@@ -53,7 +77,9 @@
 			</div>
 		</div>
 	</div>
-	<script type="module" src="/src/main.ts"></script>
+	<script defer type="module" src="/src/main.ts"></script>
+	<script defer type="module" src="/node_modules/stockfish/src/stockfish-nnue-16-single.js"></script>
+	<script defer type="module" src="/node_modules/stockfish/src/stockfish-nnue-16-single.wasm?url"></script>
 </body>
 
 </html>

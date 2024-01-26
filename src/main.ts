@@ -9,12 +9,22 @@ let scene = new THREE.Scene();
 let raycaster = new THREE.Raycaster();
 let pointer = new THREE.Vector2();
 let bot: Worker;
+let renderer: THREE.WebGLRenderer;
 
 let game = new Chess();
 let isPlayerTurn = true;
 let selectedPiece: string | undefined;
 let validMoves: Move[] = [];
 let previousMove: Move | undefined;
+let boardState: BoardState = {};
+let playerColor: Color;
+let botColor: Color;
+
+type Color = "white" | "black";
+
+type BoardState = {
+  [piece: string]: string;
+};
 
 const loadScene = () => {
   loader.load(
@@ -23,7 +33,7 @@ const loadScene = () => {
       addGLTFSceneToScene(gltf);
       addLights();
       const camera = getCamera();
-      const renderer = createAddAndGetRenderer();
+      renderer = createAddAndGetRenderer();
       const controls = setAndGetOrbitControls(camera, renderer);
 
       function animate() {
@@ -38,6 +48,10 @@ const loadScene = () => {
       addListeners();
       initBoardState();
       initStockfish();
+
+      if (!isPlayerTurn) {
+        makeBotMove();
+      }
     },
     undefined,
     function (error) {
@@ -48,6 +62,7 @@ const loadScene = () => {
 
 const addGLTFSceneToScene = (gltf: GLTF) => {
   gltf.scene.rotation.x = Math.PI / 2;
+  if (playerColor === "black") gltf.scene.rotation.y = Math.PI;
   scene.add(gltf.scene);
 };
 
@@ -216,7 +231,7 @@ const isCastlingMove = (move: Move) =>
   isKingSideCastling(move) || isQueenSideCastling(move);
 
 const castleRook = (move: Move, to: string) => {
-  const pieceColour = isPlayerTurn ? "white" : "black";
+  const pieceColour = isPlayerTurn ? playerColor : botColor;
 
   if (isKingSideCastling(move)) {
     const kingSideRookPosition = getPiecePosition(`rook_${pieceColour}_1`);
@@ -266,11 +281,13 @@ const getPromotionPieceMoveCharacter = (promotionPiece: string = "queen") => {
 const getPromotionPieceObject = (promotionPiece: string) => {
   const originalPieces = scene.children[0].children.filter(
     ({ name }: THREE.Object3D<THREE.Object3DEventMap>) =>
-      name.includes(`${promotionPiece}_white`)
+      name.includes(`${promotionPiece}_${playerColor}`)
   );
   const latestBuiltPiece = originalPieces[originalPieces.length - 1];
   const newPiece = latestBuiltPiece.clone();
-  newPiece.name = `${promotionPiece}_white_${originalPieces.length + 1}`;
+  newPiece.name = `${promotionPiece}_${playerColor}_${
+    originalPieces.length + 1
+  }`;
   return newPiece;
 };
 
@@ -299,6 +316,7 @@ let deferredResolve: ((piece: string) => void) | undefined;
   initBoardState();
   resetScene();
   closeVerdictModal();
+  getPlayAsInputAndStartGame();
 };
 
 const closeVerdictModal = () => {
@@ -308,18 +326,8 @@ const closeVerdictModal = () => {
 };
 
 function resetScene() {
-  loader = new GLTFLoader();
-  scene = new THREE.Scene();
-  raycaster = new THREE.Raycaster();
-  pointer = new THREE.Vector2();
-
-  game = new Chess();
-  isPlayerTurn = true;
-  selectedPiece = undefined;
-  validMoves = [];
-  previousMove = undefined;
-
-  loadScene();
+  scene.clear();
+  document.body.removeChild(renderer.domElement);
 }
 
 const deferredPromise = () =>
@@ -377,7 +385,12 @@ const getNextFileSameRankPosition = (position: string | undefined) => {
 };
 
 const initStockfish = () => {
-  bot = new Worker("./node_modules/stockfish/src/stockfish-nnue-16-single.js");
+  const stockFishWorkerPath = import.meta.env.PROD
+    ? "/stockfish.js"
+    : "./node_modules/stockfish/src/stockfish-nnue-16-single.js";
+  bot = new Worker(stockFishWorkerPath, {
+    type: "module",
+  });
   bot.postMessage("uci");
   bot.postMessage("ucinewgame");
   bot.postMessage("isready");
@@ -469,14 +482,14 @@ const isEnPassantMove = (move: Move) => move.flags === "e";
 
 const getPieceCharacterToPiece = (pieceCharacter: string) => {
   const pieceCharacterToPieceMap: Record<string, string> = {
-    q: `queen_${isPlayerTurn ? "white" : "black"}`,
-    n: `knight_${isPlayerTurn ? "white" : "black"}`,
-    b: `bishop_${isPlayerTurn ? "white" : "black"}`,
-    r: `rook_${isPlayerTurn ? "white" : "black"}`,
+    q: `queen_${isPlayerTurn ? playerColor : botColor}`,
+    n: `knight_${isPlayerTurn ? playerColor : botColor}`,
+    b: `bishop_${isPlayerTurn ? playerColor : botColor}`,
+    r: `rook_${isPlayerTurn ? playerColor : botColor}`,
   };
   const piece =
     pieceCharacterToPieceMap[pieceCharacter] ??
-    `queen_${isPlayerTurn ? "white" : "black"}`;
+    `queen_${isPlayerTurn ? playerColor : botColor}`;
   const originalPieces = scene.children[0].children.filter(
     ({ name }: THREE.Object3D<THREE.Object3DEventMap>) => name.includes(piece)
   );
@@ -798,10 +811,36 @@ const getPositionObject = (position: string) => {
   return getSceneObject(position);
 };
 
-let boardState: BoardState = {};
-
-type BoardState = {
-  [piece: string]: string;
+const getPlayAsInputAndStartGame = () => {
+  const introModal = document.getElementById("intro-modal");
+  if (!introModal) return;
+  introModal.style.display = "block";
 };
 
-loadScene();
+(window as any).onPlayAsSubmit = (event: SubmitEvent) => {
+  event.preventDefault();
+  if (!event.target) return;
+  const formData = new FormData(event.target as HTMLFormElement);
+  const formValues = Object.fromEntries(formData);
+  let playAs = formValues["play_as"];
+  if (playAs === "random") playAs = Math.random() > 0.5 ? "black" : "white";
+
+  playerColor = playAs as Color;
+  botColor = playAs === "white" ? "black" : "white";
+
+  isPlayerTurn = playAs === "white";
+
+  const introModal = document.getElementById("intro-modal");
+  if (!introModal) return;
+  introModal.style.display = "none";
+
+  loadScene();
+};
+
+(window as any).selectPlayAs = (playAs: Color | "random") => {
+  const radioOption = document.getElementById(`play_as_${playAs}`);
+  if (!radioOption) return;
+  (radioOption as HTMLInputElement).checked = true;
+};
+
+getPlayAsInputAndStartGame();
